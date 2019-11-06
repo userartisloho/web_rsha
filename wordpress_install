@@ -1,0 +1,108 @@
+#!/bin/bash
+
+APACHE2=$(dpkg-query -W -f='${Status}' apache2 2>/dev/null | grep -c "ok install")
+if [ $APACHE2 -eg 0 ];
+then
+        echo "apache installimine"
+        sudo apt install apache2 -y;
+elif [ $APACHE2 -eq 1 ];
+then
+        echo "Apache on installitud"
+
+fi
+
+
+mysql=$(dpkg-query -W -f='${Status}' mysql-server-5.7 2>/dev/null | grep -c "ok install")
+if [ $mysql -eq 0 ];
+then
+        echo "mysql installimine"
+        apt install mysql-server-5.7 -y;
+elif [ $mysql -eq 1 ];
+then
+        echo "mysql on installitud"
+
+fi
+
+
+php=$(dpkg-query -W -f='${Status}' php7.0 2>/dev/null | grep -c "ok install")
+if [ $php -eq 0 ];
+then
+        echo "php installimine"
+        sudo apt install php7.0 -y;
+elif [ $php -eq 1 ];
+then
+        echo "php on installitud"
+
+fi
+
+phpmyadmin=$(dpkg-query -W -f='${Status}' phpmyadmin 2>/dev/null | grep -c "ok install")
+if [ $phpmyadmin -eq 0 ];
+then
+        echo "phpmyadmin installimine"
+        sudo apt install phpmyadmin php-mbstring php-gettext -y;
+        sudo phpenmod mcrypt;
+        sudo phpenmod mbstring
+elif [ $phpmyadmin -eq 1 ];
+then
+        echo "phpmyadmin on installitud"
+
+fi
+
+echo "============================================"
+echo "WordPress-i installimine"
+echo "============================================"
+echo "Andmebaasi nimi: "
+read -e dbname
+echo "Andmebaasi kasutaja: "
+read -e dbuser
+echo "Andmebaasi parool: "
+read -s dbpass
+echo "Valmis installima? (y/n)"
+read -e run
+if [ "$run" == n ] ; then
+exit
+else
+echo "============================================"
+echo "Installime Wordpress-i."
+echo "============================================"
+#download wordpress
+curl -O https://wordpress.org/latest.tar.gz
+#unzip wordpress
+tar -zxvf latest.tar.gz
+#change dir to wordpress
+cd wordpress
+#copy file to parent dir
+cp -rf . ..
+#move back to parent dir
+cd ..
+#remove files from wordpress folder
+rm -R wordpress
+#create wp config
+cp wp-config-sample.php wp-config.php
+#set database details with perl find and replace
+perl -pi -e "s/database_name_here/$dbname/g" wp-config.php
+perl -pi -e "s/username_here/$dbuser/g" wp-config.php
+perl -pi -e "s/password_here/$dbpass/g" wp-config.php
+
+#set WP salts
+perl -i -pe'
+  BEGIN {
+    @chars = ("a" .. "z", "A" .. "Z", 0 .. 9);
+    push @chars, split //, "!@#$%^&*()-_ []{}<>~\`+=,.;:/?|";
+    sub salt { join "", map $chars[ rand @chars ], 1 .. 64 }
+  }
+  s/put your unique phrase here/salt()/ge
+' wp-config.php
+
+#create uploads folder and set permissions
+mkdir wp-content/uploads
+chmod 775 wp-content/uploads
+echo "Puhastame"
+#remove zip file
+rm latest.tar.gz
+#remove bash script
+rm wp.sh
+echo "========================="
+echo "Installimine on valmis."
+echo "========================="
+fi
