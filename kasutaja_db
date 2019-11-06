@@ -1,0 +1,8 @@
+!/bin/bash/
+for user in $(ls /home)
+do
+ls -la /home/$user/ | grep '\.my\.cnf'
+if  [ $? -eq 1 ]; then 
+	sh ./lisa_db $user
+fi
+done
