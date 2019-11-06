@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+kasutajanimi=$1
+parool=$(pwgen 6)
+dbnimi=$kasutajanimi
+echo $kasutajanimi
+echo $parool
+#sql k2sud
+Kask1="CREATE DATABASE IF NOT EXISTS $dbnimi;"
+Kask2="GRANT USAGE ON *.* TO $kasutajanimi@localhost IDENTIFIED BY '$parool';"
+Kask3="GRANT ALL PRIVILEGES ON $dbnimi.* to $kasutajanimi@localhost;"
+Kask4="FLUSH PRIVILEGES;"
+sql="${Kask1}${Kask2}${Kask3}${Kask4}"
+echo $sql
+mysql -e "$sql"
+if [ $? -eq 0 ]; then
+	touch /home/$kasutajanimi/.my.cnf
+	echo "[Client]" >> /home/$kasutajanimi/.my.cnf
+	echo "user=$kasutajanimi" >> /home/$kasutajanimi/.my.cnf
+	echo "password=$parool" >> /home/$kasutajanimi/.my.cnf
+	chown $kasutajanimi:$kasutajanimi /home/$kasutajanimi/.my.cnf
+	chmod 400 /home/$kasutajanimi/.my.cnf
+fi
