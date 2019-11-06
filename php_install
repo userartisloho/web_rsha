@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+#
+# Kontrollib PHP olemasolu
+PHP=$(dpkg-query -W -f='${Status}' php 2>/dev/null | grep -c "ok installed")
+# kui php on installitud siis vljastatakse teade. Kui ei siis installitakse.
+if [ $PHP -eq 0 ]; then
+	echo "PHP paigaldamine."
+	sudo apt-get install -y php php-curl php-mbstring php-mysql php-xmlrpc php-gettext;
+elif [ $PHP -eq 1 ]; then
+	echo "PHP on paigaldatud"
+	sudo service php status
+fi
