@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+#
+# Kontrollib phpmyadmin olemasolu
+PMA=$(dpkg-query -W -f='${Status}' phpmyadmin 2>/dev/null | grep -c "ok installed")
+# kui PHPmydamin on installitud siis vljastatakse teade. Kui ei siis installitakse.
+if [ $PMA -eq 0 ]; then
+	echo "Phpmyadmin paigaldamine."
+	sudo apt-get install -y phpmyadmin;
+elif [ $PMA -eq 1 ]; then
+	echo "phpmyadmin on paigaldatud"
+	sudo service phpmyadmin status
+fi
